@@ -6,6 +6,7 @@ import com.kpsilent.reggie.common.R;
 import com.kpsilent.reggie.entity.Employee;
 import com.kpsilent.reggie.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +63,12 @@ public class EmployeeController {
         return R.success("退出成功");
     }
 
+    /**
+     * 添加员工
+     * @param request
+     * @param employee
+     * @return
+     */
     @PostMapping
     public R<String> save(HttpServletRequest request, @RequestBody Employee employee){
         log.info("新增员工, 员工信息：{}", employee.toString());
@@ -82,9 +89,39 @@ public class EmployeeController {
         employeeService.save(employee);
         return R.success("添加成功！");
     }
+
+
     @GetMapping("/page")
     public R<Page> page(int page, int pageSize, String name){
         log.info("page = {}, pageSize = {}, name = {}", page, pageSize, name);
-        return null;
+        // 构造分页构造器
+        Page pageInfo = new Page(page, pageSize);
+
+        // 构造条件构造器
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 添加过滤条件
+        queryWrapper.like(StringUtils.isNotEmpty(name), Employee::getName, name);
+        // 添加排序条件
+        queryWrapper.orderByDesc(Employee::getUpdateTime);
+
+        // 执行查询
+        employeeService.page(pageInfo, queryWrapper);
+        return R.success(pageInfo);
+    }
+
+    /**
+     * 实现员工信息的更新
+     * @param employee
+     * @return
+     */
+    @PutMapping
+    public R<String> update(HttpServletRequest request, @RequestBody Employee employee){
+        log.info(employee.toString());
+        // 修改更新时间和更新人，然后通过id修改数据库中的数据
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser((Long)request.getSession().getAttribute("employee"));
+        employeeService.updateById(employee);
+        return R.success("员工信息修改成功");
     }
 }
