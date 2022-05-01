@@ -1,4 +1,4 @@
-package com.kpsilent.reggie.config;
+package com.kpsilent.reggie.common;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

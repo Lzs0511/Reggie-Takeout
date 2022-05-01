@@ -1,6 +1,7 @@
 package com.kpsilent.reggie.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.kpsilent.reggie.common.BaseContext;
 import com.kpsilent.reggie.common.R;
 import com.kpsilent.reggie.entity.Employee;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class LoginCheckFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+
         // 1. 获取本次请求的URI
         String requestURI = request.getRequestURI();
         log.info("拦截到请求 {}", request.getRequestURI());
@@ -51,6 +53,11 @@ public class LoginCheckFilter implements Filter {
         // 4.判断登录状态，如果已经登录了，则放行
         if(request.getSession().getAttribute("employee") != null){
             log.info("用户已登录, 用户Id为：{}", request.getSession().getAttribute("employee"));
+
+            // 将用户id存入到BaseContext中
+            Long empId = (Long) request.getSession().getAttribute("employee");
+            BaseContext.setCurrentId(empId);
+
             // 放行
             filterChain.doFilter(request, response);
             return ;
@@ -58,6 +65,8 @@ public class LoginCheckFilter implements Filter {
         log.info("用户未登录");
         // 5. 如果未登录，则返回未登录结果，通过输出流方式向客户端页面响应数据
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+
+
     }
 
     /**

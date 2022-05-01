@@ -1,5 +1,6 @@
 package com.kpsilent.reggie.config;
 
+import com.kpsilent.reggie.common.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;

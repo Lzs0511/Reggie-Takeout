@@ -75,15 +75,15 @@ public class EmployeeController {
         // 1. 设置新增员工初始化密码
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
         // 2. 更新新用户的创建时间和最后更新时间
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setCreateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
 
         // 3. 获得当前登录用户的ID
-        Long empId = (Long) request.getSession().getAttribute("employee");
+//        Long empId = (Long) request.getSession().getAttribute("employee");
 
         // 4. 更新新用户的创始人和最新更新人的id
-        employee.setCreateUser(empId);
-        employee.setUpdateUser(empId);
+//        employee.setCreateUser(empId);
+//        employee.setUpdateUser(empId);
 
         // 5. 保存新用户到数据库中
         employeeService.save(employee);
@@ -118,10 +118,21 @@ public class EmployeeController {
     @PutMapping
     public R<String> update(HttpServletRequest request, @RequestBody Employee employee){
         log.info(employee.toString());
+        long id = Thread.currentThread().getId();
+        log.info("current tid: {}", id);
         // 修改更新时间和更新人，然后通过id修改数据库中的数据
         employee.setUpdateTime(LocalDateTime.now());
         employee.setUpdateUser((Long)request.getSession().getAttribute("employee"));
         employeeService.updateById(employee);
         return R.success("员工信息修改成功");
+    }
+
+    @GetMapping("/{id}")
+    public R<Employee> getById(@PathVariable Long id){
+        log.info("根据id查询员工信息");
+        Employee emp = employeeService.getById(id);
+        if(emp != null)
+            return R.success(emp);
+        return R.error("没有查询到相应员工的信息");
     }
 }
