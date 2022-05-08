@@ -25,4 +25,14 @@ public class GlobalExceptionHandler {
         }
         return R.success("未知错误");
     }
+    @ExceptionHandler(CustomException.class)
+    public R<String> exceptionHandler(CustomException exception){
+        // 日志打印错误信息
+        log.error(exception.getMessage());
+
+        // 返回异常错误信息
+        return R.error(exception.getMessage());
+    }
+
+
 }
