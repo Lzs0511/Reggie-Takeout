@@ -6,6 +6,7 @@ import com.kpsilent.reggie.common.R;
 import com.kpsilent.reggie.dto.DishDto;
 import com.kpsilent.reggie.entity.Category;
 import com.kpsilent.reggie.entity.Dish;
+import com.kpsilent.reggie.entity.DishFlavor;
 import com.kpsilent.reggie.service.CategoryService;
 import com.kpsilent.reggie.service.DishFlavorService;
 import com.kpsilent.reggie.service.DishService;
@@ -81,8 +82,23 @@ public class DishController {
         return R.success("修改菜品成功");
     }
 
+//    @GetMapping("/list")
+//    public R<List<Dish>> list(Dish dish){
+//        // 1. 根据Dish中的id查询菜品并返回
+//        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+//        // 查询起售的菜品
+//        queryWrapper.eq(Dish::getStatus, 1);
+//        // 根据sort字段升序和更新时间updateTime降序排序
+//        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+//
+//        List<Dish> dishes = dishService.list(queryWrapper);
+//
+//        return R.success(dishes);
+//    }
+
     @GetMapping("/list")
-    public R<List<Dish>> list(Dish dish){
+    public R<List<DishDto>> list(Dish dish){
         // 1. 根据Dish中的id查询菜品并返回
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
@@ -93,6 +109,17 @@ public class DishController {
 
         List<Dish> dishes = dishService.list(queryWrapper);
 
-        return R.success(dishes);
+        List<DishDto> dtoList = dishes.stream().map((item)->{
+            DishDto dto = new DishDto();
+            // 将菜品信息拷贝到dto中
+            BeanUtils.copyProperties(item, dto);
+            // 查询菜品所对应的口味信息，存放到dto中
+            LambdaQueryWrapper<DishFlavor> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(item.getId() != null, DishFlavor::getDishId, item.getId());
+            List<DishFlavor> flavors = dishFlavorService.list(queryWrapper1);
+            dto.setFlavors(flavors);
+            return dto;
+        }).collect(Collectors.toList());
+        return R.success(dtoList);
     }
 }
